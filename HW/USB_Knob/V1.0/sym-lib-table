@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name "Signetics")(type "KiCad")(uri "${KIPRJMOD}/Signetics.kicad_sym")(options "")(descr ""))
+  (lib (name "SamacSys_Parts")(type "Legacy")(uri "${KIPRJMOD}/SamacSys_Parts.lib")(options "")(descr ""))
+)
