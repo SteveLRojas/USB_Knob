@@ -11,6 +11,7 @@
 #define ENABLE_WIGGLER 1
 #define REDUCE_RESOLUTION 1
 #define POLL_ENCODER 1
+#define DEBOUNCE_SAMPLES 4
 
 //Pins:
 // ENCA  = P32
@@ -127,7 +128,7 @@ void byte_to_hex(UINT8 value, char* buff)
 int main()
 {
 	UINT8 knob_sw;
-	UINT8 knob_sw_prev;
+	UINT8 knob_sw_count;
 	UINT8 knob_press_event;
 	UINT8 knob_release_event;
 	
@@ -180,7 +181,7 @@ int main()
 	
 	gpio_clear_pin(GPIO_PORT_3, GPIO_PIN_5);	//turn on LED1
 	knob_sw = gpio_read_pin(GPIO_PORT_1, GPIO_PIN_4);
-	knob_sw_prev = knob_sw;
+	knob_sw_count = 0;
 	while(TRUE)
 	{	
 		// Check for mode change and set indicators
@@ -205,11 +206,15 @@ int main()
 			gpio_clear_pin(GPIO_PORT_1, GPIO_PIN_1);	//turn on LED3
 		}
 		
-		// Get knob state
-		knob_sw = gpio_read_pin(GPIO_PORT_1, GPIO_PIN_4);
-		knob_press_event = (knob_sw_prev & ~knob_sw);
-		knob_release_event = (knob_sw & ~knob_sw_prev);
-		knob_sw_prev = knob_sw;
+		// De-bounce the knob state
+		if(gpio_read_pin(GPIO_PORT_1, GPIO_PIN_4))
+			knob_sw_count += (knob_sw_count <= DEBOUNCE_SAMPLES);
+		else
+			knob_sw_count -= (knob_sw_count != 0);
+		
+		knob_press_event = (knob_sw && !knob_sw_count);
+		knob_release_event = (!knob_sw && (knob_sw_count == DEBOUNCE_SAMPLES));
+		knob_sw = (knob_sw && knob_sw_count) || (knob_sw_count == DEBOUNCE_SAMPLES);
 		
 #if POLL_ENCODER
 		qenc_poll();
@@ -318,23 +323,46 @@ int main()
 				}
 				break;
 			case KNOB_MODE_VOLUME:
-				if(knob_inc_event)
+				if(gpio_read_pin(GPIO_PORT_1, GPIO_PIN_7))
 				{
-					hid_cc_press(HID_CC_BTN_VOL_UP);
-					while(hid_cc_report_pending);
-					hid_cc_press(HID_CC_BTN_NONE);
+					if(knob_inc_event)
+					{
+						hid_cc_press(HID_CC_BTN_VOL_UP);
+						while(hid_cc_report_pending);
+						hid_cc_press(HID_CC_BTN_NONE);
+					}
+					if(knob_dec_event)
+					{
+						hid_cc_press(HID_CC_BTN_VOL_DOWN);
+						while(hid_cc_report_pending);
+						hid_cc_press(HID_CC_BTN_NONE);
+					}
+					
+					if(knob_press_event)
+						hid_cc_press(HID_CC_BTN_VOL_MUTE);
+					if(knob_release_event)
+						hid_cc_press(HID_CC_BTN_NONE);
 				}
-				if(knob_dec_event)
+				else
 				{
-					hid_cc_press(HID_CC_BTN_VOL_DOWN);
-					while(hid_cc_report_pending);
-					hid_cc_press(HID_CC_BTN_NONE);
+					if(knob_inc_event)
+					{
+						hid_cc_press(HID_CC_BTN_MEDIA_NEXT);
+						while(hid_cc_report_pending);
+						hid_cc_press(HID_CC_BTN_NONE);
+					}
+					if(knob_dec_event)
+					{
+						hid_cc_press(HID_CC_BTN_MEDIA_PREV);
+						while(hid_cc_report_pending);
+						hid_cc_press(HID_CC_BTN_NONE);
+					}
+					
+					if(knob_press_event)
+						hid_cc_press(HID_CC_BTN_PLAY_PAUSE);
+					if(knob_release_event)
+						hid_cc_press(HID_CC_BTN_NONE);
 				}
-				
-				if(knob_press_event)
-					hid_cc_press(HID_CC_BTN_VOL_MUTE);
-				if(knob_release_event)
-					hid_cc_press(HID_CC_BTN_NONE);
 				break;
 			default:
 				break;
