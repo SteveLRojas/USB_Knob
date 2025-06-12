@@ -1,5 +1,5 @@
 #include "CH552.H"
-#include "System.h"
+#include "CH552_RCC.h"
 #include "CH552_GPIO.h"
 #include "CH552_UART.h"
 #include "CH552_TIMER.h"
@@ -10,8 +10,8 @@
 #define ENABLE_DEBUG 0
 #define ENABLE_WIGGLER 1
 #define REDUCE_RESOLUTION 1
-#define POLL_ENCODER 1
-#define DEBOUNCE_SAMPLES 4
+#define POLL_ENCODER 0
+#define DEBOUNCE_SAMPLES 8
 
 //Pins:
 // ENCA  = P32
@@ -138,7 +138,7 @@ int main()
 	UINT8 knob_inc_event;
 	UINT8 knob_dec_event;
 	
-	CfgFsys();
+	rcc_set_clk_freq(RCC_CLK_FREQ_24M);
 
 	gpio_set_mode(GPIO_MODE_INPUT, GPIO_PORT_1, GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7); // ENCSW, SW123
 	gpio_set_mode(GPIO_MODE_INPUT, GPIO_PORT_3, GPIO_PIN_0 | GPIO_PIN_2 | GPIO_PIN_3); // RXD, ENCAB
@@ -156,6 +156,11 @@ int main()
 	timer_start(TIMER_2);
 	EA = 1;	//enable interupts
 	E_DIS = 0;
+	
+	if(rcc_get_rst_typ() == RCC_RST_TYP_WDOG)
+	{
+		rcc_delay_ms(500);
+	}
 	
 #if ENABLE_DEBUG	
 	//Blink LED once
@@ -178,6 +183,8 @@ int main()
 	qenc_init(QENC_MODE_INTERRUPT);
 #endif
 	pseudo_random_seed(0x1337BEEF);
+	rcc_reload_wdog(0x00);
+	rcc_set_wdog_rst_en(RCC_WDOG_ENABLED);
 	
 	gpio_clear_pin(GPIO_PORT_3, GPIO_PIN_5);	//turn on LED1
 	knob_sw = gpio_read_pin(GPIO_PORT_1, GPIO_PIN_4);
@@ -298,7 +305,10 @@ int main()
 				{
 #if ENABLE_WIGGLER
 					if(knob_release_event)
+					{
 						wiggler_active = !wiggler_active;
+						stop_time = 0;	//start moving immediately when activated
+					}
 #else
 					if(knob_press_event)
 						hid_mouse_press(HID_MOUSE_BTN_WHEEL);
@@ -419,5 +429,7 @@ int main()
 			hid_cc_send_report();
 			cc_timeout = 0;
 		}
+		
+		rcc_reload_wdog(0x00);
 	}
 }
