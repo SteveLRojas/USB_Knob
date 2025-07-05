@@ -48,6 +48,7 @@
 #define HID_CC_BTN_VOL_UP        0xE9
 #define HID_CC_BTN_VOL_DOWN      0xEA
 
+//HINT: Idle rates are in units of 4ms (see HID specification). The user must call the corresponding _send_report functions for non-zero idle rates.
 extern volatile UINT8 hid_mouse_report_pending;
 extern volatile UINT8 hid_mouse_idle_rate;
 extern volatile UINT8 hid_cc_report_pending;
