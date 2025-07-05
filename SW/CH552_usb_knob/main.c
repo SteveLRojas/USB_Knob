@@ -7,11 +7,12 @@
 #include "CH552_QUADRATURE_ENCODER.h"
 #include "pseudo_random.h"
 
-#define ENABLE_DEBUG 0
-#define ENABLE_WIGGLER 1
-#define REDUCE_RESOLUTION 1
-#define POLL_ENCODER 0
-#define DEBOUNCE_SAMPLES 8
+#define BAUD_RATE		125000ul
+#define ENABLE_DEBUG	0
+#define ENABLE_WIGGLER	1
+#define REDUCE_RESOLUTION	1
+#define POLL_ENCODER		0
+#define DEBOUNCE_SAMPLES	8
 
 //Pins:
 // ENCA  = P32

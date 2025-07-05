@@ -233,7 +233,7 @@
               <RCB>
                 <Type>0</Type>
                 <StartAddress>0x0</StartAddress>
-                <Size>0x10000</Size>
+                <Size>0xffff</Size>
               </RCB>
               <RXB>
                 <Type>0</Type>
@@ -346,7 +346,7 @@
             <CaseSensitiveSymbols>0</CaseSensitiveSymbols>
             <WarningLevel>2</WarningLevel>
             <DataOverlaying>1</DataOverlaying>
-            <OverlayString>?PR?CDC_INIT?CH552_USB_CDC ~ (?PR?CDC_ON_SOF?CH552_USB_CDC, ?PR?_CDC_ON_OUT?CH552_USB_CDC, ?PR?_CDC_ON_IN?CH552_USB_CDC, ?PR?_CDC_ON_SETUP?CH552_USB_CDC, ?PR?CDC_ON_RST?CH552_USB_CDC), ?PR?USB_ISR?CH552_USB ! (?PR?CDC_ON_SOF?CH552_USB_CDC, ?PR?_CDC_ON_OUT?CH552_USB_CDC, ?PR?_CDC_ON_IN?CH552_USB_CDC, ?PR?_CDC_ON_SETUP?CH552_USB_CDC, ?PR?CDC_ON_RST?CH552_USB_CDC)</OverlayString>
+            <OverlayString>?PR?HID_INIT?CH552_HID_CC_PAN_MOUSE ~ (?PR?_HID_ON_OUT?CH552_HID_CC_PAN_MOUSE, ?PR?_HID_ON_IN?CH552_HID_CC_PAN_MOUSE, ?PR?_HID_ON_SETUP?CH552_HID_CC_PAN_MOUSE, ?PR?HID_ON_RST?CH552_HID_CC_PAN_MOUSE), ?PR?USB_ISR?CH552_USB ! (?PR?_HID_ON_OUT?CH552_HID_CC_PAN_MOUSE, ?PR?_HID_ON_IN?CH552_HID_CC_PAN_MOUSE, ?PR?_HID_ON_SETUP?CH552_HID_CC_PAN_MOUSE, ?PR?HID_ON_RST?CH552_HID_CC_PAN_MOUSE), ?PR?MAIN?MAIN ~ (?PR?ON_TIMER?MAIN), ?PR?TIMER2_ISR?CH552_TIMER !(?PR?ON_TIMER?MAIN)</OverlayString>
             <MiscControls></MiscControls>
             <DisableWarningNumbers>16</DisableWarningNumbers>
             <LinkerCmdFile>.\link.lin</LinkerCmdFile>
@@ -447,19 +447,49 @@
               <FilePath>.\CH552_USB.h</FilePath>
             </File>
             <File>
-              <FileName>CH552_USB_CDC.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\CH552_USB_CDC.c</FilePath>
-            </File>
-            <File>
-              <FileName>CH552_USB_CDC.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\CH552_USB_CDC.h</FilePath>
-            </File>
-            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\main.c</FilePath>
+            </File>
+            <File>
+              <FileName>CH552_FIFO.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\CH552_FIFO.c</FilePath>
+            </File>
+            <File>
+              <FileName>CH552_FIFO.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\CH552_FIFO.h</FilePath>
+            </File>
+            <File>
+              <FileName>CH552_UART.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\CH552_UART.c</FilePath>
+            </File>
+            <File>
+              <FileName>CH552_UART.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\CH552_UART.h</FilePath>
+            </File>
+            <File>
+              <FileName>pseudo_random.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\pseudo_random.c</FilePath>
+            </File>
+            <File>
+              <FileName>pseudo_random.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\pseudo_random.h</FilePath>
+            </File>
+            <File>
+              <FileName>CH552_HID_CC_PAN_MOUSE.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\CH552_HID_CC_PAN_MOUSE.c</FilePath>
+            </File>
+            <File>
+              <FileName>CH552_HID_CC_PAN_MOUSE.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\CH552_HID_CC_PAN_MOUSE.h</FilePath>
             </File>
           </Files>
         </Group>
