@@ -12,7 +12,7 @@
 #define ENABLE_DEBUG	0
 #define ENABLE_WIGGLER	1
 #define SPEED_STEPS		16
-#define FINE_SHIFT		6
+#define FINE_SHIFT		7
 #define COARSE_HYSTERESIS	128
 #define FINE_HYSTERESIS		4
 #define DEBOUNCE_SAMPLES	8
@@ -101,7 +101,7 @@ void on_timer(void)
 	}
 
 #if ENABLE_WIGGLER
-	if((knob_mode == KNOB_MODE_PAN) && wiggler_active)
+	if((knob_mode != KNOB_MODE_VOLUME) && wiggler_active)
 	{
 		if(run_time)
 		{
@@ -216,6 +216,8 @@ int main()
 	sw1_count = 0;
 	sw2_count = 0;
 	sw3_count = 0;
+	knob_pos_coarse = as5600_read_word(AS_REG_RAW_ANGLE) << 4;
+	knob_pos_fine = knob_pos_coarse;
 	pos_accum = 0;
 	pos_accum_prev = 0;
 	while(TRUE)
@@ -263,7 +265,7 @@ int main()
 			knob_dec_event = 0;
 		}
 		
-		knob_pos_change = (knob_pos_raw - knob_pos_fine) >> 4;	//HINT: Behavior of right shift on a signed operand is compiler specific...
+		knob_pos_change = (knob_pos_raw - knob_pos_fine) >> 4;	//HINT: Behavior of right shift on a signed operand is compiler specific... The intent is dividing by 16.
 		if((knob_pos_change < -(signed short)FINE_HYSTERESIS) || (knob_pos_change > (signed short)FINE_HYSTERESIS))
 			knob_pos_fine = knob_pos_raw;
 		else
@@ -311,9 +313,15 @@ int main()
 		if(sw2_state)	//change the mode only while sw2 is not pressed
 		{
 			if(sw1_press_event)
-				knob_mode -= (knob_mode != 0);
+				knob_mode -= 1;
 			if(sw3_press_event)
-				knob_mode += (knob_mode < 2);
+				knob_mode += 1;
+			
+			if(knob_mode & 0x80)	//if knob_mode is "negative"
+				knob_mode = KNOB_MODE_VOLUME;
+			else if(knob_mode > KNOB_MODE_VOLUME)
+				knob_mode = KNOB_MODE_SCROLL;
+			
 			if(knob_mode != knob_mode_prev)
 			{
 				gpio_set_pin(GPIO_PORT_3, GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5);
@@ -338,8 +346,18 @@ int main()
 				}
 				else
 				{
+#if ENABLE_WIGGLER
+					if(sw3_press_event)
+					{
+						wiggler_active = !wiggler_active;
+						stop_time = 0;	//start moving immediately when activated
+					}
+					if(sw1_press_event)
+						hid_mouse_press(HID_MOUSE_BTN_WHEEL);
+#else
 					if(sw1_press_event | sw3_press_event)
 						hid_mouse_press(HID_MOUSE_BTN_WHEEL);
+#endif
 					if(knob_inc_event)
 						++scroll_speed;
 					if(knob_dec_event)
@@ -349,7 +367,7 @@ int main()
 					if(scroll_speed > (UINT8)SPEED_STEPS)
 						scroll_speed = (UINT8)SPEED_STEPS;
 				}
-				if(sw1_release_event | sw3_release_event)
+				if(sw1_release_event | sw3_release_event)	//Make sure to release the mouse button even if sw2 is released first.
 					hid_mouse_release(HID_MOUSE_BTN_WHEEL);
 				break;
 			case KNOB_MODE_PAN:
@@ -371,9 +389,12 @@ int main()
 						wiggler_active = !wiggler_active;
 						stop_time = 0;	//start moving immediately when activated
 					}
-#endif
 					if(sw1_press_event)
 						hid_mouse_press(HID_MOUSE_BTN_WHEEL);
+#else
+					if(sw1_press_event | sw3_press_event)
+						hid_mouse_press(HID_MOUSE_BTN_WHEEL);
+#endif
 					if(knob_inc_event)
 						++pan_speed;
 					if(knob_dec_event)
@@ -383,7 +404,7 @@ int main()
 					if(pan_speed > (UINT8)SPEED_STEPS)
 						pan_speed = (UINT8)SPEED_STEPS;
 				}
-				if(sw1_release_event)
+				if(sw1_release_event | sw3_release_event)	//Make sure to release the mouse button even if sw2 is released first.
 					hid_mouse_release(HID_MOUSE_BTN_WHEEL);
 				break;
 			case KNOB_MODE_VOLUME:
