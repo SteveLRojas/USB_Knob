@@ -376,7 +376,7 @@ int main()
 					if(knob_pos_change)
 					{
 						pos_accum += knob_pos_change * pan_speed;
-						knob_pos_change = (pos_accum_prev >> FINE_SHIFT) - (pos_accum >> FINE_SHIFT);
+						knob_pos_change = (pos_accum >> FINE_SHIFT) - (pos_accum_prev >> FINE_SHIFT);
 						pos_accum_prev = pos_accum;
 						hid_mouse_scroll(0, (signed char)knob_pos_change);
 					}
